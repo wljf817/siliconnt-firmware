@@ -1,0 +1,37 @@
+## @file
+#  Emulate system registers Apple cores do not implement, for foreign EFI
+#  images (Windows Boot Manager) that expect the ARM PMU to exist.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent OR MIT
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = AppleSysRegEmuDxe
+  FILE_GUID                      = 4e6a9c21-8f3d-4b07-9d52-c1e7a0b8f634
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = AppleSysRegEmuDxeInitialize
+
+[Sources.common]
+  AppleSysRegEmuDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  ArmPkg/ArmPkg.dec
+  AppleSiliconPkg/AppleSiliconPkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  DebugLib
+  ArmLib
+  DefaultExceptionHandlerLib
+
+[Protocols]
+  gEfiCpuArchProtocolGuid                          ## CONSUMES
+
+[Depex]
+  gEfiCpuArchProtocolGuid

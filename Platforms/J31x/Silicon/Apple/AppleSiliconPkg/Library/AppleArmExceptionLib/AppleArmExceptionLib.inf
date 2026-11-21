@@ -1,0 +1,37 @@
+## @file
+#  ArmPkg's ArmExceptionLib (AArch64 only) with one change: the synchronous
+#  exception vector for "current EL, SPx" keeps using the current stack instead
+#  of switching to the SP_EL0 spare stack (see AArch64/ExceptionSupport.S).
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = AppleArmExceptionLib
+  FILE_GUID                      = 7f3a2c19-6b0e-4d55-9a8c-31e4f0b7d2a6
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = CpuExceptionHandlerLib
+
+[Sources.common]
+  ArmExceptionLib.c
+
+[Sources.AARCH64]
+  AArch64/AArch64Exception.c
+  AArch64/ExceptionSupport.S    | GCC
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  ArmPkg/ArmPkg.dec
+
+[LibraryClasses]
+  ArmLib
+  BaseMemoryLib
+  CacheMaintenanceLib
+  DebugLib
+  DefaultExceptionHandlerLib
+  MemoryAllocationLib
+
+[Pcd]

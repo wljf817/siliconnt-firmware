@@ -1,0 +1,12 @@
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = MacBookPro2021Pkg
+  PACKAGE_GUID                   = 55e2ff3d-0b5d-4424-8b1c-e8b756702bec
+  PACKAGE_VERSION                = 1.0
+
+[Includes.common]
+  Include
+
+[Guids.common]
+  gMacBookPro2021PkgTokenSpaceGuid = { 0x7c2f5b1e, 0x3a4d, 0x4e21, { 0x9f, 0x0b, 0x2d, 0x6c, 0x8e, 0x41, 0x57, 0xa9 } }
+

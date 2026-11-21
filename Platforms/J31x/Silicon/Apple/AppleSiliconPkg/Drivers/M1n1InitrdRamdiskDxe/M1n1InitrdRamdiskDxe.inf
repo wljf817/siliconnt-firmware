@@ -1,0 +1,40 @@
+## @file
+#  Registers the initramfs blob m1n1 loaded for us as a UEFI RAM disk.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent OR MIT
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = M1n1InitrdRamdiskDxe
+  FILE_GUID                      = 8c1f3a2e-5b7d-4e91-a6c4-2d9f0b6e7a15
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = M1n1InitrdRamdiskDxeInitialize
+
+[Sources.common]
+  M1n1InitrdRamdiskDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  AppleSiliconPkg/AppleSiliconPkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  HobLib
+
+[Protocols]
+  gEfiRamDiskProtocolGuid                         ## CONSUMES
+
+[Guids]
+  gEfiVirtualCdGuid                               ## SOMETIMES_CONSUMES ## GUID
+  gEfiVirtualDiskGuid                             ## SOMETIMES_CONSUMES ## GUID
+  gAppleSiliconPkgM1n1InitrdHobGuid               ## CONSUMES ## HOB
+
+[Depex]
+  gEfiRamDiskProtocolGuid

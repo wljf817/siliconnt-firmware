@@ -1,0 +1,36 @@
+## @file
+#  SerialPortLib: Apple UART + a text console drawn into the iBoot framebuffer.
+#  Every DEBUG() shows up on the built-in display — for machines without a
+#  serial adapter. See AppleFbUartSerialPortLib.c.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent OR MIT
+##
+
+[Defines]
+  INF_VERSION    = 0x00010005
+  FILE_GUID      = 5d2b7a1c-3f6e-4b8a-9c0d-7e1f2a3b4c5d
+  BASE_NAME      = AppleFbUartSerialPortLib
+  MODULE_TYPE    = BASE
+  VERSION_STRING = 1.0
+  LIBRARY_CLASS  = SerialPortLib
+
+[Sources.common]
+  AppleFbUartSerialPortLib.c
+  Font8x16.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+  AppleSiliconPkg/AppleSiliconPkg.dec
+
+[LibraryClasses]
+  ArmLib
+  PcdLib
+  IoLib
+  CacheMaintenanceLib
+  HobLib
+  CompilerIntrinsicsLib
+
+[FixedPcd]
+  gAppleSiliconPkgTokenSpaceGuid.PcdAppleUartBase
+  gAppleSiliconPkgTokenSpaceGuid.PcdBootArgsPointer

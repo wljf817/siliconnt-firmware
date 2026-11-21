@@ -112,12 +112,11 @@ DisplayQueryMode(
 
   ASSERT_EFI_ERROR(Status);
 
-  *SizeOfInfo                   = sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION);
-  (*Info)->Version              = This->Mode->Info->Version;
-  (*Info)->HorizontalResolution = This->Mode->Info->HorizontalResolution;
-  (*Info)->VerticalResolution   = This->Mode->Info->VerticalResolution;
-  (*Info)->PixelFormat          = This->Mode->Info->PixelFormat;
-  (*Info)->PixelsPerScanLine    = This->Mode->Info->PixelsPerScanLine;
+  if (EFI_ERROR(Status))
+    return Status;
+
+  *SizeOfInfo = sizeof(**Info);
+  **Info = *This->Mode->Info;
 
   return EFI_SUCCESS;
 }
@@ -177,8 +176,10 @@ SimpleFbDxeInitialize(
   UINT64 FramebufferAddr   = BootArgs->video.base;
   UINT32 FramebufferWidth  = BootArgs->video.width;
   UINT32 FramebufferHeight = BootArgs->video.height;
+  UINT32 FramebufferStride = (UINT32)BootArgs->video.stride;
+  UINT32 FramebufferDepth  = (UINT32)BootArgs->video.depth & 0xFF;   /* bit 16 = retina flag */
 
-  DEBUG((EFI_D_INFO, "SimpleFbDxe: Framebuffer parameters, Base: 0x%llx, Width, %d, Height %d\n", FramebufferAddr, FramebufferWidth, FramebufferHeight));
+  DEBUG((EFI_D_INFO, "SimpleFbDxe: Framebuffer parameters, Base: 0x%llx, Width, %d, Height %d, Stride %d, Depth %d\n", FramebufferAddr, FramebufferWidth, FramebufferHeight, FramebufferStride, FramebufferDepth));
 
   /* Sanity check */
   if (FramebufferAddr == 0 || FramebufferWidth == 0 ||
@@ -220,13 +221,29 @@ SimpleFbDxeInitialize(
   mDisplay.Mode->Info->HorizontalResolution = FramebufferWidth;
   mDisplay.Mode->Info->VerticalResolution   = FramebufferHeight;
 
-  /* SimpleFB runs on a8r8g8b8 (VIDEO_BPP32) for WoA devices */
-  UINT32               LineLength = FramebufferWidth * VNBYTES(VIDEO_BPP32);
-  UINT32               FrameBufferSize    = LineLength * FramebufferHeight;
+  /*
+   * iBoot leaves 4 bytes per pixel either way, but the internal panels of the
+   * laptops run at depth 30 (x2r10g10b10, 10 bits per channel) while external
+   * displays / the M1 Mac mini use depth 32 (xrgb8888). Describe the 10-bit
+   * layout through PixelBitMask so FrameBufferBltLib converts on the fly;
+   * treating it as 8-bit turns the UI's grey into bright green.
+   */
+  UINT32               BytesPerPixel      = sizeof (UINT32);   /* NB: VNBYTES() has no outer parentheses, don't divide by it */
+  UINT32               LineLength         = (FramebufferStride != 0) ? FramebufferStride : FramebufferWidth * BytesPerPixel;
+  UINTN                FrameBufferSize    = (UINTN)LineLength * FramebufferHeight;
   EFI_PHYSICAL_ADDRESS FrameBufferAddress = FramebufferAddr;
 
-  mDisplay.Mode->Info->PixelsPerScanLine = FramebufferWidth;
-  mDisplay.Mode->Info->PixelFormat = PixelBlueGreenRedReserved8BitPerColor;
+  mDisplay.Mode->Info->PixelsPerScanLine = LineLength / BytesPerPixel;
+  DEBUG((EFI_D_INFO, "SimpleFbDxe: PixelsPerScanLine %d, PixelFormat %a\n", mDisplay.Mode->Info->PixelsPerScanLine, (FramebufferDepth == 30) ? "x2r10g10b10 (bitmask)" : "xrgb8888"));
+  if (FramebufferDepth == 30) {
+    mDisplay.Mode->Info->PixelFormat                     = PixelBitMask;
+    mDisplay.Mode->Info->PixelInformation.RedMask        = 0x3FF00000;
+    mDisplay.Mode->Info->PixelInformation.GreenMask      = 0x000FFC00;
+    mDisplay.Mode->Info->PixelInformation.BlueMask       = 0x000003FF;
+    mDisplay.Mode->Info->PixelInformation.ReservedMask   = 0xC0000000;
+  } else {
+    mDisplay.Mode->Info->PixelFormat = PixelBlueGreenRedReserved8BitPerColor;
+  }
   mDisplay.Mode->SizeOfInfo      = sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION);
   mDisplay.Mode->FrameBufferBase = FrameBufferAddress;
   mDisplay.Mode->FrameBufferSize = FrameBufferSize;

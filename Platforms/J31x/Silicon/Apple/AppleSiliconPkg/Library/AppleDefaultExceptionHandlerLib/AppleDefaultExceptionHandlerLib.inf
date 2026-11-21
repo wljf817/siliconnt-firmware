@@ -1,0 +1,39 @@
+## @file
+#  ArmPkg's DefaultExceptionHandlerLib (AArch64 only), reordered for bring-up
+#  without a debugger: registers, ESR/FAR and the syndrome come out first,
+#  the frame-pointer walk is bounds-checked so a foreign image (Windows Boot
+#  Manager, say) with an unusual stack cannot turn the dump into a second
+#  exception before the useful part is printed.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = AppleDefaultExceptionHandlerLib
+  FILE_GUID                      = 2b7c1d3e-5a9f-4c62-8e11-0d6f4a2b9c37
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = DefaultExceptionHandlerLib|DXE_CORE DXE_DRIVER
+
+[Sources.common]
+  DefaultExceptionHandlerUefi.c
+
+[Sources.AARCH64]
+  AArch64/DefaultExceptionHandler.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+
+[LibraryClasses]
+  UefiLib
+  BaseLib
+  PrintLib
+  DebugLib
+  PeCoffGetEntryPointLib
+  SerialPortLib
+  UefiBootServicesTableLib
+
+[Guids]
+  gEfiDebugImageInfoTableGuid
